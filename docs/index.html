@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>River ice at USGS HIVIS camera sites</title>
+<style>
+  :root { --bg:#f6f8fa; --ink:#14232d; --ink-2:#4a5d69; --rule:#d5dee5; color-scheme: light; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#0e1820; --ink:#e6eef3; --ink-2:#9db0bc; --rule:#26394a; color-scheme: dark; } }
+  body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 900px; margin: 0 auto; padding: 32px 20px; }
+  h1 { font-size: 1.6rem; margin: 0 0 4px; }
+  p { color: var(--ink-2); margin: 0 0 16px; }
+  table { border-collapse: collapse; margin-top: 8px; }
+  td { padding: 4px 16px 4px 0; border-bottom: 1px solid var(--rule); }
+  td:last-child { text-align: right; font-variant-numeric: tabular-nums; }
+  #status { color: var(--ink-2); }
+</style>
+</head>
+<body>
+<main>
+  <h1>River ice at USGS HIVIS camera sites</h1>
+  <p>Winter 2025–26. Prototype shell: data loading only. Views will be built from the hand sketches.</p>
+  <p id="status">Loading data…</p>
+  <table id="summary"></table>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6.16/dist/plot.umd.min.js"></script>
+<script>
+(async () => {
+  try {
+    const [sites, events, daily] = await Promise.all([
+      d3.csv("data/sites.csv"), d3.csv("data/events.csv"), d3.csv("data/daily.csv")
+    ]);
+    const rows = [
+      ["Sites", sites.length],
+      ["Site-days", daily.length],
+      ["Sites with a discharge record", sites.filter(s => s.has_discharge_record === "yes").length],
+      ["Sites with a gage ice season", sites.filter(s => +s.gage_ice_days > 0).length],
+      ["Camera rivers", sites.filter(s => s.cam_id).length],
+      ["Freeze-up / break-up events", events.length]
+    ];
+    d3.select("#summary").selectAll("tr").data(rows).join("tr")
+      .html(([k, v]) => `<td>${k}</td><td>${d3.format(",")(v)}</td>`);
+    d3.select("#status").text(`Loaded. d3 ${d3.version}, Plot ${Plot.version}.`);
+  } catch (err) {
+    d3.select("#status").text("Could not load data: " + err.message);
+  }
+})();
+</script>
+</body>
+</html>
