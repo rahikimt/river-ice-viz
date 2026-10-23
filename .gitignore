@@ -1,0 +1,7 @@
+# large or private working files
+api_cache/
+batch_output/*/frames/
+weights/
+*.pth
+__pycache__/
+.DS_Store
